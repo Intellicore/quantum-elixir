@@ -3,7 +3,7 @@ defmodule Quantum.Executor do
   @moduledoc false
 
   alias Timex.Timezone
-  alias Timex.DateTime
+  alias Timex.Date
   import Quantum.Matcher
 
   def convert_to_timezone(s, tz) do
@@ -15,8 +15,8 @@ defmodule Quantum.Executor do
     end
 
     case Application.get_env(:quantum, :timezone, :utc) do
-      :utc   -> t |> DateTime.from |> Timezone.convert(tz_final)
-      :local -> t |> DateTime.from(:local) |> Timezone.convert(tz_final)
+      :utc   -> t |> Date.from |> Timezone.convert(tz_final)
+      :local -> t |> Date.from(:local) |> Timezone.convert(tz_final)
       tz     -> raise "Unsupported timezone: #{tz}"
     end
   end
@@ -43,7 +43,7 @@ defmodule Quantum.Executor do
 
   def execute({"@weekly", fun, args, tz}, state) do
     c = convert_to_timezone(state, tz)
-    c_weekday = rem(Timex.weekday(c), 7)
+    c_weekday = rem(Timex.Date.weekday(c), 7)
     if c.minute == 0 and c.hour == 0 and c_weekday == 0 do
       execute_fun(fun, args)
     else
@@ -82,7 +82,7 @@ defmodule Quantum.Executor do
     [m, h, d, n, w] = e |> String.split(" ")
 
     c = convert_to_timezone(state, tz)
-    c_weekday = rem(Timex.weekday(c), 7)
+    c_weekday = rem(Timex.Date.weekday(c), 7)
 
     cond do
       !match(m, c.minute,  0..59) -> false
